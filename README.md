@@ -1,2 +1,2 @@
 # blockchain-infra
-this repository is blcokchain infra package.
+this repository is blockchain infra package.
