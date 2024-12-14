@@ -1,4 +1,4 @@
-package client
+package chain_client
 
 import (
 	"crypto/ecdsa"
@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// ChainConfiguration is the necessary config for block chain client
+// ChainConfiguration is the necessary config for block chain chain_client
 // use to set up connections to RPC nodes
 type ChainConfiguration struct {
 	ChainID        *big.Int
@@ -103,14 +103,14 @@ type BlockChainClient interface {
 
 	// GetTransactionData generate the data part of a transaction
 	// Example will be:
-	// data, err := client.GetTransactionData("balanceOf", "erc20", address)
+	// data, err := chain_client.GetTransactionData("balanceOf", "erc20", address)
 	// td := TransactionData{}
 	// td.Data = data
-	// tx, hash, err := client.GetTransaction(td)
+	// tx, hash, err := chain_client.GetTransaction(td)
 	// signature := GenerateSignature(hash)
-	// err := client.BroadcastTransaction(tx, signature)
+	// err := chain_client.BroadcastTransaction(tx, signature)
 	// or
-	// result, err := client.CallContract(td)
+	// result, err := chain_client.CallContract(td)
 	// fields, err := UnpackByABI(result)
 	GetTransactionData(method string, abi string, args ...interface{}) (data []byte, err error)
 

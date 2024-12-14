@@ -13,7 +13,7 @@ import (
 	"github.com/fbsobreira/gotron-sdk/pkg/abi"
 	"github.com/fbsobreira/gotron-sdk/pkg/address"
 	"github.com/fbsobreira/gotron-sdk/pkg/common"
-	"github.com/h8848/blockchain-infra/chain/client"
+	"github.com/h8848/blockchain-infra/chain/chain_client"
 	"math/big"
 	"reflect"
 	"strconv"
@@ -42,8 +42,8 @@ type TronClient struct {
 	chainID *big.Int
 }
 
-// NewTronClient creates the client
-func NewTronClient(config *client.ChainConfiguration) (*TronClient, error) {
+// NewTronClient creates the chain_client
+func NewTronClient(config *chain_client.ChainConfiguration) (*TronClient, error) {
 	c := TronClient{}
 	c.abiMap = sync.Map{}
 	if err := c.RegisterABI(Trc20ABIName, trc20Abi); err != nil {
@@ -256,7 +256,7 @@ func (tc *TronClient) getFunctionSelector(abiName, method string) string {
 }
 
 // GetTransaction returns the unsigned transaction and the hash value
-func (tc *TronClient) GetTransaction(td *client.Transaction) ([]byte, []byte, error) {
+func (tc *TronClient) GetTransaction(td *chain_client.Transaction) ([]byte, []byte, error) {
 	var tx *TransactionExtention
 	var err error
 	if len(td.Data) == 0 {
@@ -278,7 +278,7 @@ func (tc *TronClient) GetTransaction(td *client.Transaction) ([]byte, []byte, er
 // TODO, this function is not finished yet, need to refer to
 // https://github.com/tronprotocol/sun-network/blob/develop/js-sdk/src/index.js
 // to change the sign functions to make it work
-func (tc *TronClient) DeployContract(contractAbi, contractBin string, td *client.Transaction) (
+func (tc *TronClient) DeployContract(contractAbi, contractBin string, td *chain_client.Transaction) (
 	[]byte, []byte, string, error) {
 	tx, addr, err := tc.c.DeployContract(contractAbi, contractBin, td.From, "Migrations")
 	if err != nil {
@@ -329,7 +329,7 @@ func (tc *TronClient) GetNonceByNumber(address string, blockNumber *big.Int) (ui
 }
 
 // GetSuggestFee returns the estimated fee for a transaction
-func (tc *TronClient) GetSuggestFee(td *client.Transaction) (*client.FeeLimit, error) {
+func (tc *TronClient) GetSuggestFee(td *chain_client.Transaction) (*chain_client.FeeLimit, error) {
 	gas, err := tc.EstimateGas(td)
 	if err != nil {
 		return nil, fmt.Errorf("estimate gas failed, err=%s", err)
@@ -338,14 +338,14 @@ func (tc *TronClient) GetSuggestFee(td *client.Transaction) (*client.FeeLimit, e
 	if err != nil {
 		return nil, fmt.Errorf("get gas price failed, err=%s", err)
 	}
-	fee := client.FeeLimit{}
+	fee := chain_client.FeeLimit{}
 	fee.Gas = new(big.Int).SetUint64(gas)
 	fee.GasFeeCap = gasPrice
 	fee.GasTipCap = big.NewInt(0)
 	return &fee, nil
 }
 
-func (tc *TronClient) EstimateGas(td *client.Transaction) (uint64, error) {
+func (tc *TronClient) EstimateGas(td *chain_client.Transaction) (uint64, error) {
 	if len(td.Data) <= 0 {
 		return 0, nil
 	}
@@ -358,7 +358,7 @@ func (tc *TronClient) EstimateGas(td *client.Transaction) (uint64, error) {
 }
 
 // CallContract call eth_call
-func (tc *TronClient) CallContract(td *client.Transaction) ([]byte, error) {
+func (tc *TronClient) CallContract(td *chain_client.Transaction) ([]byte, error) {
 	return tc.c.EthCall(td.From, td.To, td.Amount, td.Data)
 }
 
@@ -447,12 +447,12 @@ func (tc *TronClient) GetBlockByNumber(num *big.Int) (map[string]interface{}, er
 	return tc.c.GetBlockByNumber(num)
 }
 
-func (tc *TronClient) GetTransactionByHash(transactionHash string) (*client.TransactionInfo, error) {
+func (tc *TronClient) GetTransactionByHash(transactionHash string) (*chain_client.TransactionInfo, error) {
 	if strings.HasPrefix(transactionHash, "0x") {
 		transactionHash = transactionHash[2:]
 	}
-	info := client.TransactionInfo{}
-	tx := client.Transaction{}
+	info := chain_client.TransactionInfo{}
+	tx := chain_client.Transaction{}
 	info.Tx = &tx
 
 	txInfo, err := tc.c.GetTransactionInfoByID(transactionHash)
@@ -468,17 +468,17 @@ func (tc *TronClient) GetTransactionByHash(transactionHash string) (*client.Tran
 		return &info, nil
 	}
 	if len(transaction.RawData.Contract) == 0 {
-		info.Status, info.Error = client.TransactionStatusInvalid, "no_contract_found_in_raw_data"
+		info.Status, info.Error = chain_client.TransactionStatusInvalid, "no_contract_found_in_raw_data"
 		return nil, fmt.Errorf("transaction contract not found")
 	}
-	fee := client.FeeLimit{
+	fee := chain_client.FeeLimit{
 		Gas:       txInfo.Fee,
 		GasFeeCap: big.NewInt(1),
 		GasTipCap: big.NewInt(0),
 	}
 	tx.Fee = &fee
 
-	info.Gas = &client.TxGasInfo{
+	info.Gas = &chain_client.TxGasInfo{
 		Fee: txInfo.Fee,
 	}
 
@@ -486,12 +486,12 @@ func (tc *TronClient) GetTransactionByHash(transactionHash string) (*client.Tran
 	if ok {
 		callDataStr, success := callData.(string)
 		if !success {
-			info.Status, info.Error = client.TransactionStatusInvalid, "call_data_is_not_string"
+			info.Status, info.Error = chain_client.TransactionStatusInvalid, "call_data_is_not_string"
 			return nil, fmt.Errorf("transaction data format is incorrect")
 		}
 		tx.Data, err = hex.DecodeString(callDataStr)
 		if err != nil {
-			info.Status, info.Error = client.TransactionStatusInvalid, "call_data_decode_failed"
+			info.Status, info.Error = chain_client.TransactionStatusInvalid, "call_data_decode_failed"
 			return nil, fmt.Errorf("transaction data decode failed, err=%s", err)
 		}
 	}
@@ -509,9 +509,9 @@ func (tc *TronClient) GetTransactionByHash(transactionHash string) (*client.Tran
 		info.IsPending = false
 	}
 	if strings.EqualFold(transaction.Ret[0].ContractRet, "SUCCESS") {
-		info.Status = client.TransactionStatusSuccess
+		info.Status = chain_client.TransactionStatusSuccess
 	} else {
-		info.Status = client.TransactionStatusFailed
+		info.Status = chain_client.TransactionStatusFailed
 	}
 	logs, err := tc.c.GetTransactionEventsByID(transactionHash)
 	if err != nil {
@@ -527,7 +527,7 @@ func (tc *TronClient) GetTransactionByHash(transactionHash string) (*client.Tran
 		}
 		logData := logs.Data[i]
 		topic := []byte(logData.EventName)
-		event := client.EventLog{
+		event := chain_client.EventLog{
 			Address: logData.ContractAddress,
 			Topics:  [][]byte{topic},
 			Data:    tronEvent,
@@ -537,7 +537,7 @@ func (tc *TronClient) GetTransactionByHash(transactionHash string) (*client.Tran
 	return &info, nil
 }
 
-func (tc *TronClient) ParseEventLog(abiName string, eventLog *client.EventLog) ([]interface{}, error) {
+func (tc *TronClient) ParseEventLog(abiName string, eventLog *chain_client.EventLog) ([]interface{}, error) {
 	event := TronEvent{}
 	if err := json.Unmarshal(eventLog.Data, &event); err != nil {
 		return nil, fmt.Errorf("decode event failed, err=%s", err)

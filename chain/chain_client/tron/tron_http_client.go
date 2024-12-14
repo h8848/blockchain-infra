@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/fbsobreira/gotron-sdk/pkg/address"
 	"github.com/fbsobreira/gotron-sdk/pkg/common"
-	"github.com/h8848/blockchain-infra/chain/client/ethevent"
+	"github.com/h8848/blockchain-infra/chain/chain_client/ethevent"
 	"io"
 	"math/big"
 	"net/http"
@@ -172,7 +172,7 @@ func initJsonRequest(method string, r *jsonRPCRequest) {
 	r.Method = method
 }
 
-// HTTPClient is the client to call tron http apis
+// HTTPClient is the chain_client to call tron http apis
 type HTTPClient struct {
 	client   *http.Client
 	endPoint string
@@ -181,7 +181,7 @@ type HTTPClient struct {
 	trongrid string
 }
 
-// NewHTTPClient creates the client
+// NewHTTPClient creates the chain_client
 // Endpoint is the node address for http apis
 func NewHTTPClient(Endpoint, FullNode, TronGrid string) *HTTPClient {
 	c := http.Client{}

@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/h8848/blockchain-infra/chain/client/tron"
+	"github.com/h8848/blockchain-infra/chain/chain_client/tron"
 	"github.com/h8848/blockchain-infra/chain/ethereum/eth_abi"
 	"github.com/shopspring/decimal"
 	"github.com/tyler-smith/go-bip39"

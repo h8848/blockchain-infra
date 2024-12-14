@@ -140,7 +140,7 @@ func ChainIdToChainName(chainId string) string {
 
 func EthUrlConnTest(client *rpc.Client) (time.Duration, error) {
 	if client == nil {
-		return time.Millisecond * 99999, errors.New("client is nil")
+		return time.Millisecond * 99999, errors.New("chain_client is nil")
 	}
 	startTime := time.Now()
 	//TODO 拼url， url+token，username，password

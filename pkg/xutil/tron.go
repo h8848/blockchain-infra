@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/fbsobreira/gotron-sdk/pkg/address"
-	"github.com/h8848/blockchain-infra/chain/client/tron"
+	"github.com/h8848/blockchain-infra/chain/chain_client/tron"
 	"strconv"
 	"strings"
 )
